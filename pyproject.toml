@@ -1,0 +1,107 @@
+[project]
+name = "pytest-checks"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "the-citto", email = "alex.citterio@hotmail.co.uk" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[project.optional-dependencies]
+black = [
+    "black>=25.12.0",
+]
+flake8 = [
+    "flake8>=7.3.0",
+]
+isort = [
+    "isort>=7.0.0",
+]
+mypy = [
+    "mypy>=1.19.0",
+]
+pyright = [
+    "pyright[nodejs]>=1.1.407",
+]
+ruff = [
+    "ruff>=0.14.8",
+]
+ty = [
+    "ty>=0.0.1a33",
+]
+all = [
+    "pytest-checks[black]",
+    "pytest-checks[flake8]",
+    "pytest-checks[isort]",
+    "pytest-checks[mypy]",
+    "pytest-checks[pyright]",
+    "pytest-checks[ruff]",
+    "pytest-checks[ty]",
+]
+
+[dependency-groups]
+dev = [
+    "ipython>=9.8.0",
+]
+test = [
+    "black>=25.12.0",
+    "flake8>=7.3.0",
+    "isort>=7.0.0",
+    "mypy>=1.19.0",
+    "pyright[nodejs]>=1.1.407",
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "ruff>=0.14.8",
+    "ty>=0.0.1a33",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.7,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers --no-header --tb=no --cov --cov-report term-missing"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+omit = ["tests/*"]
+
+[tool.pyright]
+typeCheckingMode = "strict"
+venvPath = "."
+venv = ".venv"
+
+[tool.mypy]
+strict = true
+disallow_untyped_defs = true
+exclude = ["build"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = [ "ALL" ]
+ignore = [
+    "D203", # incorrect-blank-line-before-class
+    # "D211", # blank-line-before-class
+    "D213", # multi-line-summary-second-line
+    # "D212", # multi-line-summary-first-line
+    "ERA001", # commented-out code
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "ANN401",   # any-type
+    "PLR2004",  # magic-value-comparison
+    "S101",     # assert
+]
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile="black"
+multi_line_output = 3
+force_grid_wrap = 2
