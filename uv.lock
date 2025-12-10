@@ -492,6 +492,15 @@ version = "0.1.0"
 source = { editable = "." }
 
 [package.optional-dependencies]
+all = [
+    { name = "black" },
+    { name = "flake8" },
+    { name = "isort" },
+    { name = "mypy" },
+    { name = "pyright", extra = ["nodejs"] },
+    { name = "ruff" },
+    { name = "ty" },
+]
 black = [
     { name = "black" },
 ]
@@ -537,10 +546,17 @@ requires-dist = [
     { name = "isort", marker = "extra == 'isort'", specifier = ">=7.0.0" },
     { name = "mypy", marker = "extra == 'mypy'", specifier = ">=1.19.0" },
     { name = "pyright", extras = ["nodejs"], marker = "extra == 'pyright'", specifier = ">=1.1.407" },
+    { name = "pytest-checks", extras = ["black"], marker = "extra == 'all'" },
+    { name = "pytest-checks", extras = ["flake8"], marker = "extra == 'all'" },
+    { name = "pytest-checks", extras = ["isort"], marker = "extra == 'all'" },
+    { name = "pytest-checks", extras = ["mypy"], marker = "extra == 'all'" },
+    { name = "pytest-checks", extras = ["pyright"], marker = "extra == 'all'" },
+    { name = "pytest-checks", extras = ["ruff"], marker = "extra == 'all'" },
+    { name = "pytest-checks", extras = ["ty"], marker = "extra == 'all'" },
     { name = "ruff", marker = "extra == 'ruff'", specifier = ">=0.14.8" },
     { name = "ty", marker = "extra == 'ty'", specifier = ">=0.0.1a33" },
 ]
-provides-extras = ["black", "flake8", "isort", "mypy", "pyright", "ruff", "ty"]
+provides-extras = ["black", "flake8", "isort", "mypy", "pyright", "ruff", "ty", "all"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "ipython", specifier = ">=9.8.0" }]
