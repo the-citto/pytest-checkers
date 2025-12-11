@@ -31,6 +31,8 @@ jobs:
           VERSION=$(uvx --from=toml-cli toml get --toml-path=pyproject.toml project.version)
           echo "PACKAGE_VERSION=$VERSION" >> "$GITHUB_ENV"
 
+      - name: Fetch all tags
+        run: git fetch --tags
       - name: Check if tag already exists
         id: check_tag
         run: |
