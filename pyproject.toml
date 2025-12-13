@@ -6,6 +6,13 @@ readme = "README.md"
 authors = [
     { name = "the-citto" }
 ]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Typing :: Typed",
+]
 requires-python = ">=3.13"
 dependencies = []
 
