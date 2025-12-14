@@ -1,4 +1,4 @@
-"""Test pytest-checkers."""
+"""Test behaviour."""
 
 from __future__ import annotations
 
