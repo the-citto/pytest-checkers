@@ -215,6 +215,7 @@ class IsortPlugin(CheckersPlugin):
     @property
     def cmd_flags(self) -> list[str]:
         """Command flags."""
+        # TODO: handle `--colors` for `isort` installations not via `pytest-checkers`
         return ["--diff", "--color"]
 
 
