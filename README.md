@@ -13,7 +13,6 @@
 
 <figure style="display: inline-block;">
   <img src="https://github.com/the-citto/pytest-checkers/raw/main/docs/the-power-of-exponential-growth-a-story-about-knowledge.jpg" width="200" style="vertical-align: top;">
-  <figcaption style="text-align: center; ">The power of knowledge</figcaption>
 </figure>
 
 # pytest-checkers
