@@ -10,13 +10,13 @@
 [![License][github_license]](https://github.com/the-citto/pytest-checkers/blob/master/LICENSE)
 <br>
 
-# pytest-checkers
 
 <figure style="display: inline-block;">
   <img src="https://github.com/the-citto/pytest-checkers/raw/main/docs/the-power-of-exponential-growth-a-story-about-knowledge.jpg" width="200" style="vertical-align: top;">
   <figcaption style="text-align: center; ">The power of knowledge</figcaption>
 </figure>
-<br>
+
+# pytest-checkers
 
 Use desired LSPs, type checkers, linters, and formatters (diff only).
 
@@ -28,18 +28,17 @@ either of the above, or
 
 `pytest_checkers[all]`
 
+simple flags: `--ruff` `--mypy` etc. or just `--checkers` for all the dependencies installed. 
+
+Use `pyproject.toml` (and `.flake8` until they finally decide to move)
+for your preferred settings for every tool.
+
+
 ## Note
 
 pyright installs `pyright[nodejs]`
 
 isort install `isort[colors]`
-
-<br>
-
-simple flags: `--ruff` `--mypy` etc. or just `--all` for all the dependencies installed. 
-
-Use `pyproject.toml` (and `.flake8` until they finally decide to move)
-for your preferred settings for every tool.
 
 ## Kudos
 
