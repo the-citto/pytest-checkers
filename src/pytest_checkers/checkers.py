@@ -12,6 +12,11 @@ import typing
 
 from _pytest.reports import TestReport
 
+try:
+    from isort.format import colorama_unavailable
+except ImportError:
+    colorama_unavailable = True
+
 if typing.TYPE_CHECKING:
     import pytest
     from _pytest.terminal import TerminalReporter
@@ -215,7 +220,8 @@ class IsortPlugin(CheckersPlugin):
     @property
     def cmd_flags(self) -> list[str]:
         """Command flags."""
-        # TODO: handle `--colors` for `isort` installations not via `pytest-checkers`
+        if colorama_unavailable:
+            return ["--diff"]
         return ["--diff", "--color"]
 
 
