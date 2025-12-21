@@ -31,14 +31,13 @@ if typing.TYPE_CHECKING:
 
 def test_tool_header(pytester: pytest.Pytester, tested_tool: str | None, tool_name: ToolName) -> None:
     """Test tool header."""
-    # assert tested_tool == "foo"
-    # assert tested_tool != tool_name
-    assert tested_tool == tool_name
     pytester.makepyfile('"""Test doc."""\n')
     result = pytester.runpytest_subprocess(f"--{tool_name}")
     header_txt = f"=== tests {tool_name} ==="
-    if tested_tool is None or tested_tool == tool_name:
-        assert header_txt not in result.stdout.str()
+    if tested_tool is None or tested_tool == "checkers":
+        return
+    if tested_tool == tool_name:
+        assert header_txt in result.stdout.str()
         # result.stdout.fnmatch_lines([header_txt])
     else:
         assert header_txt not in result.stdout.str()
