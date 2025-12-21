@@ -59,7 +59,7 @@ class PluginItem(pytest.Item):
             pytest.exit(f"Internal Error: {self.name} plugin not found during runtest")
         plugin.run_tool()  # ty: ignore[possibly-missing-attribute]
         if plugin.is_error:  # ty: ignore[possibly-missing-attribute]
-            fail_msg = f"{self.name} failed with output:\n{plugin.cmd_output}"
+            fail_msg = f"{self.name} failed with output:\n{plugin.cmd_output}"  # ty: ignore[possibly-missing-attribute]
             raise pytest.fail(fail_msg)
 
     def repr_failure(
@@ -250,6 +250,7 @@ TOOLS_MAP: dict[Tool, ToolMapDictValues] = {
     "ty": {"tool_cls": TyPlugin, "help_": "Enable `ty check`"},
     "pyright": {"tool_cls": PyrightPlugin, "help_": "Enable `pyright`"},
 }
+CHECKERS_HELP = "Enable all available checks"
 added_options: list[Tool] = []
 
 

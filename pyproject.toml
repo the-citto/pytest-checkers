@@ -73,10 +73,14 @@ build-backend = "uv_build"
 typeCheckingMode = "strict"
 venvPath = "."
 venv = ".venv"
+stubPath = "typesheds"
+
+[tool.ty.rules]
+unsupported-operator = "ignore"
 
 [tool.mypy]
 strict = true
-mypy_path = ["src", "tests"]
+mypy_path = ["src", "tests", "typesheds"]
 disallow_untyped_defs = true
 exclude = ["build/*"]
 
