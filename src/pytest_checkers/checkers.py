@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import abc
-import contextlib
-import importlib.metadata
+import importlib.util
 import os
 import subprocess
 import sys
@@ -12,41 +10,23 @@ import typing
 
 import pytest
 
-try:
-    from isort.format import colorama_unavailable
-except ImportError:
-    colorama_unavailable = True
+from pytest_checkers import (
+    GROUP_NAME,
+    HELPS,
+)
 
 if typing.TYPE_CHECKING:
+
     from _pytest._code.code import (
         TerminalRepr,
         TracebackStyle,
     )
     from _pytest.terminal import TerminalReporter
 
-Tool = typing.Literal["black", "flake8", "isort", "mypy", "pyright", "ruff", "ty"]
-EscTable = typing.Literal[
-    "black",
-    "red",
-    "green",
-    "yellow",
-    "blue",
-    "purple",
-    "cyan",
-    "white",
-    "Black",
-    "Red",
-    "Green",
-    "Yellow",
-    "Blue",
-    "Purple",
-    "Cyan",
-    "White",
-    "bold",
-    "light",
-    "blink",
-    "invert",
-]
+    from pytest_checkers import (
+        EscTable,
+        Tool,
+    )
 
 
 class PluginItem(pytest.Item):
@@ -55,10 +35,10 @@ class PluginItem(pytest.Item):
     def runtest(self) -> None:
         """Run test."""
         plugin = self.config.pluginmanager.get_plugin(self.name)
-        if not isinstance(plugin, CheckersPlugin):
+        if not isinstance(plugin, CheckersPlugin):  # pragma: no cover
             pytest.exit(f"Internal Error: {self.name} plugin not found during runtest")
-        plugin.run_tool()  # ty: ignore[possibly-missing-attribute]
-        if plugin.is_error:  # ty: ignore[possibly-missing-attribute]
+        plugin.run_tool()
+        if plugin.is_error:
             fail_msg = f"{self.name} failed with output:\n{plugin.cmd_output}"
             raise pytest.fail(fail_msg)
 
@@ -73,11 +53,11 @@ class PluginItem(pytest.Item):
 
     def reportinfo(self) -> tuple[os.PathLike[str] | str, int | None, str]:
         """Report info."""
-        return self.path, 0, f"tool: {self.name}"
+        return self.path, 0, f"tool::{self.name}"
 
 
-class CheckersPlugin(abc.ABC):
-    """Abstract checkers plugin."""
+class CheckersPlugin:
+    """Checkers plugin."""
 
     tool: Tool
     header_markup: EscTable
@@ -90,9 +70,9 @@ class CheckersPlugin(abc.ABC):
         self.cmd_returncode = 0
 
     @property
-    @abc.abstractmethod
     def cmd_flags(self) -> list[str]:
         """Command flags."""
+        return []
 
     @property
     def env_vars(self) -> dict[str, str]:
@@ -117,12 +97,10 @@ class CheckersPlugin(abc.ABC):
 
     def pytest_terminal_summary(self, terminalreporter: TerminalReporter) -> None:
         """Pytest terminal summary."""
-        if not getattr(self.config.option, self.tool, False):
-            return
         # circumventing mypy quirk - https://github.com/python/mypy/issues/10023
         header_markup_kwarg = {typing.cast("str", self.header_markup): True}
         terminalreporter.write_sep(title=f"tests {self.tool}", sep="=", **header_markup_kwarg)
-        terminalreporter.write(self.cmd_output)
+        terminalreporter.write(self.cmd_output + self.finish_msg)
 
     def pytest_collection_modifyitems(
         self,
@@ -132,7 +110,11 @@ class CheckersPlugin(abc.ABC):
     ) -> None:
         """Pytest collection modify item."""
         _ = config
-        item = PluginItem.from_parent(session, name=self.tool)  # pyright: ignore[reportUnknownMemberType]
+        item = PluginItem.from_parent(  # pyright: ignore[reportUnknownMemberType]
+            session,
+            name=self.tool,
+        )
+        item._nodeid = f"{GROUP_NAME}::{self.tool}"  # pyright: ignore[reportPrivateUsage]  # noqa: SLF001
         items.append(item)
 
 
@@ -141,11 +123,6 @@ class PyrightPlugin(CheckersPlugin):
 
     tool = "pyright"
     header_markup = "yellow"
-
-    @property
-    def cmd_flags(self) -> list[str]:
-        """Command flags."""
-        return []
 
 
 class TyPlugin(CheckersPlugin):
@@ -165,11 +142,6 @@ class MypyPlugin(CheckersPlugin):
 
     tool = "mypy"
     header_markup = "blue"
-
-    @property
-    def cmd_flags(self) -> list[str]:
-        """Command flags."""
-        return []
 
 
 class RuffPlugin(CheckersPlugin):
@@ -229,47 +201,39 @@ class IsortPlugin(CheckersPlugin):
     @property
     def cmd_flags(self) -> list[str]:
         """Command flags."""
-        if colorama_unavailable:
+        if importlib.util.find_spec("colorama") is None:  # pragma: no cover  # tested with tox isortnocolor
             return ["--diff"]
         return ["--diff", "--color"]
 
 
-class ToolMapDictValues(typing.TypedDict):
-    """ToolMapDictValues."""
-
-    tool_cls: type[CheckersPlugin]
-    help_: str
-
-
-TOOLS_MAP: dict[Tool, ToolMapDictValues] = {
-    "black": {"tool_cls": BlackPlugin, "help_": "Enable `black --diff`"},
-    "isort": {"tool_cls": IsortPlugin, "help_": "Enable `isort --diff`"},
-    "flake8": {"tool_cls": Flake8Plugin, "help_": "Enable `flake8`"},
-    "ruff": {"tool_cls": RuffPlugin, "help_": "Enable `ruff check`"},
-    "mypy": {"tool_cls": MypyPlugin, "help_": "Enable `mypy`"},
-    "ty": {"tool_cls": TyPlugin, "help_": "Enable `ty check`"},
-    "pyright": {"tool_cls": PyrightPlugin, "help_": "Enable `pyright`"},
+tools_map: dict[Tool, type[CheckersPlugin]] = {
+    "black": BlackPlugin,
+    "flake8": Flake8Plugin,
+    "isort": IsortPlugin,
+    "mypy": MypyPlugin,
+    "pyright": PyrightPlugin,
+    "ruff": RuffPlugin,
+    "ty": TyPlugin,
 }
 added_options: list[Tool] = []
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
-    """Set hooks."""
-    group = parser.getgroup("checkers")
-    group.addoption("--checkers", action="store_true", help="Enable all available checks")
-    for tool, v in TOOLS_MAP.items():
-        with contextlib.suppress(importlib.metadata.PackageNotFoundError):
-            _ = importlib.metadata.version(tool)
-            help_ = v["help_"]
+    """Add CLI options."""
+    group = parser.getgroup(GROUP_NAME)
+    for tool, help_ in HELPS.items():
+        if tool == GROUP_NAME:
+            group.addoption(f"--{tool}", action="store_true", help=help_)
+        elif importlib.util.find_spec(tool):
             group.addoption(f"--{tool}", action="store_true", help=help_)
             added_options.append(tool)
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    """Configure."""
+    """Get CLI selections."""
     for tool in added_options:
         if config.option.checkers:
             setattr(config.option, tool, True)
         if getattr(config.option, tool, False):
-            tool_cls = TOOLS_MAP[tool]["tool_cls"]
+            tool_cls = tools_map[tool]
             config.pluginmanager.register(tool_cls(config), name=tool)
