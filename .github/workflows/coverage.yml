@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -39,6 +41,6 @@ jobs:
       - name: Commit and push coverage badge
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          files: coverage.svg
+          file_pattern: coverage.svg
           commit_message: "docs: update unit test coverage badge"
 
