@@ -3,6 +3,7 @@ name = "pytest-checkers"
 version = "1.0.3"
 description = "Pytest Plugin for dry-run checks LSPs, Type Checkers, Linters, and Formatters during testing"
 readme = "README.md"
+license = { file = "LICENSE" }
 authors = [
     { name = "the-citto" }
 ]
@@ -19,6 +20,8 @@ requires-python = ">=3.13"
 dependencies = [
     "pytest>=9.0.2",
 ]
+[project.urls]
+Repository = "https://github.com/the-citto/pytest-checkers"
 
 [project.entry-points."pytest11"]
 checkers = "pytest_checkers.checkers"
