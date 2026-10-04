@@ -8,7 +8,6 @@ authors = [
     { name = "the-citto" }
 ]
 classifiers = [
-    "License :: OSI Approved :: MIT License",
     "Operating System :: POSIX :: Linux",
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python",
@@ -27,53 +26,122 @@ Repository = "https://github.com/the-citto/pytest-checkers"
 checkers = "pytest_checkers.checkers"
 
 [project.optional-dependencies]
-black = [
-    "black>=25.12.0",
-]
-flake8 = [
-    "flake8>=7.3.0",
-]
-isort = [
-    "isort[colors]>=7.0.0",
-]
-mypy = [
-    "mypy>=1.19.0",
-]
-pyright = [
-    "pyright[nodejs]>=1.1.407",
-]
-ruff = [
-    "ruff>=0.14.8",
-]
-ty = [
-    "ty>=0.0.1a33",
-]
-all = [
-    "pytest-checkers[black]",
-    "pytest-checkers[flake8]",
-    "pytest-checkers[isort]",
-    "pytest-checkers[mypy]",
-    "pytest-checkers[pyright]",
-    "pytest-checkers[ruff]",
-    "pytest-checkers[ty]",
-]
 
 [dependency-groups]
 dev = [
     "ipython>=9.8.0",
 ]
 test = [
+    "black>=26.5.1",
+    "flake8>=7.3.0",
     "flake8-pyproject>=1.2.4",
+    "isort>=7.0.0",
+    "mypy>=1.19.0",
+    "pyright[nodejs]>=1.1.407",
     "pytest-cov>=7.0.0",
     "pytest-mock>=3.15.1",
+    "ruff>=0.14.8",
     "tox>=4.32.0",
     "tox-uv>=1.29.0",
+    "ty>=0.0.1a33",
 ]
 
 [build-system]
 requires = ["uv_build>=0.9.7,<0.10.0"]
 build-backend = "uv_build"
 
+[tool.uv]
+# CVE mitigations
+override-dependencies = [
+    "black>=26.3.1",
+    "click>=8.3.3",
+    "pygments>=2.20",
+    "pytest>=9.0.3",
+    "uv>=0.11.15",
+    "virtualenv>=21.7.13",
+]
+
+[tool.pytest]
+addopts = [
+    "--strict-markers",
+    "--no-header",
+    # "--checkers",
+]
+testpaths = [
+    "tests",
+]
+
+[tool.coverage.run]
+omit = ["tests/*"]
+
+[tool.tox]
+requires = [
+    "tox>=4.32.0",
+    "tox-uv>=1.29.0"
+]
+isolated_build = true
+env_list = [
+    { product = [
+        # ["linux", "windows"],
+        ["3.13", "3.14"],
+        ["mindeps", "maxdeps"],
+        ["checkers", "pyright", "ty", "mypy", "ruff", "flake8", "black", "isort", "isortnocolor", "tyruff"],
+    ] },
+]
+
+[tool.tox.gh.python]
+"3.13" = "py313"
+"3.14" = "py314"
+
+[tool.tox.env_run_base]
+package = "editable"
+pass_env = ["PYTEST_ADDOPTS"]
+
+uv_resolution = { replace = "if", condition = "factor.mindeps", then = "lowest-direct", else = "highest"}
+
+# [tool.tox.env."3.13-mindeps-pyright"]
+# set_env = { TESTED_TOOLS = "pyright" }
+# deps = [".[pyright]"]
+# # commands = [["pytest", "tests/test_interface.py", "--checkers", "{posargs:}"]]
+# commands = [["pytest", "tests/test_interface.py", "--checkers", { replace = "posargs", extend = true }]]
+
+deps = [
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    { replace = "if", condition = "factor.checkers", then = ["flake8-pyproject>=1.2.4", ".[all]"], extend = true },
+    { replace = "if", condition = "factor.pyright", then = [".[pyright]"], extend = true },
+    { replace = "if", condition = "factor.ty", then = [".[ty]"], extend = true },
+    { replace = "if", condition = "factor.mypy", then = [".[mypy]"], extend = true },
+    { replace = "if", condition = "factor.ruff", then = [".[ruff]"], extend = true },
+    { replace = "if", condition = "factor.flake8", then = ["flake8-pyproject>=1.2.4", ".[flake8]"], extend = true },
+    { replace = "if", condition = "factor.black", then = [".[black]"], extend = true },
+    { replace = "if", condition = "factor.isort", then = [".[isort]"], extend = true },
+    { replace = "if", condition = "factor.isortnocolor", then = ["isort>=7.0.0", "."], extend = true },
+    { replace = "if", condition = "factor.tyruff", then = [".[ty,ruff]"], extend = true },
+]
+commands = [
+    { replace = "if", condition = "factor.checkers", then = [["pytest", "--checkers", { replace = "posargs", extend = true }]], extend = true },
+    { replace = "if", condition = "factor.pyright", then = [["pytest", "tests/test_interface.py", "--checkers", { replace = "posargs", extend = true }]], extend = true },
+    { replace = "if", condition = "factor.ty", then = [["pytest", "tests/test_interface.py", "--checkers", { replace = "posargs", extend = true }]], extend = true },
+    { replace = "if", condition = "factor.mypy", then = [["pytest", "tests/test_interface.py", "--checkers", { replace = "posargs", extend = true }]], extend = true },
+    { replace = "if", condition = "factor.ruff", then = [["pytest", "tests/test_interface.py", "--checkers", { replace = "posargs", extend = true }]], extend = true },
+    { replace = "if", condition = "factor.flake8", then = [["pytest", "tests/test_interface.py", "--checkers", { replace = "posargs", extend = true }]], extend = true },
+    { replace = "if", condition = "factor.black", then = [["pytest", "tests/test_interface.py", "--checkers", { replace = "posargs", extend = true }]], extend = true },
+    { replace = "if", condition = "factor.isort", then = [["pytest", "tests/test_interface.py", "--checkers", { replace = "posargs", extend = true }]], extend = true },
+    { replace = "if", condition = "factor.isortnocolor", then = [["pytest", "tests/test_interface.py", "--checkers", { replace = "posargs", extend = true }]], extend = true },
+    { replace = "if", condition = "factor.tyruff", then = [["pytest", "tests/test_interface.py", "--ty", "--ruff", { replace = "posargs", extend = true }]], extend = true }
+]
+set_env = [
+    { replace = "if", condition = "factor.black", then = { TESTED_TOOLS = "black" }, else = {} },
+    { replace = "if", condition = "factor.flake8", then = { TESTED_TOOLS = "flake8" }, else = {} },
+    { replace = "if", condition = "factor.isort", then = { TESTED_TOOLS = "isort" }, else = {} },
+    { replace = "if", condition = "factor.isortnocolor", then = { TESTED_TOOLS = "isort" }, else = {} },
+    { replace = "if", condition = "factor.mypy", then = { TESTED_TOOLS = "mypy" }, else = {} },
+    { replace = "if", condition = "factor.pyright", then = { TESTED_TOOLS = "pyright" }, else = {} },
+    { replace = "if", condition = "factor.ruff", then = { TESTED_TOOLS = "ruff" }, else = {} },
+    { replace = "if", condition = "factor.ty", then = { TESTED_TOOLS = "ty" }, else = {} },
+    { replace = "if", condition = "factor.tyruff", then = { TESTED_TOOLS = "ty,ruff" }, else = {} }
+]
 
 [tool.pyright]
 typeCheckingMode = "strict"
@@ -98,6 +166,7 @@ line-length = 120
 [tool.ruff.lint]
 select = [ "ALL" ]
 ignore = [
+    "CPY001",
     "D203", # incorrect-blank-line-before-class
     # "D211", # blank-line-before-class
     "D213", # multi-line-summary-second-line
