@@ -95,14 +95,13 @@ isolated_build = true
 env_list = [
     { product = [
         # ["linux", "windows"],
-        ["3.13", "3.14"],
+        ["3.14"],
         ["mindeps", "maxdeps"],
         ["checkers", "pyright", "mypy", "ruff", "flake8", "black", "isort", "isortnocolor"],
     ] },
 ]
 
 [tool.tox.gh.python]
-"3.13" = "py313"
 "3.14" = "py314"
 
 [tool.tox.env_run_base]

@@ -4,7 +4,7 @@ on:
   release:
     types: [published, edited]
   workflow_run:
-    workflows: ["Create GitHub Release from pyproject.toml version"] 
+    workflows: ["Create GitHub Release from pyproject.toml version"]
     types:
       - completed
 
@@ -33,12 +33,12 @@ jobs:
           fi
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ env.SHA_TO_USE }}
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4
         with:
           version: "latest"
 
@@ -48,4 +48,3 @@ jobs:
 
       - name: Publish release distributions to PyPI
         run: uv publish dist/*
-
