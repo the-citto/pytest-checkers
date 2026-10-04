@@ -99,12 +99,6 @@ pass_env = ["PYTEST_ADDOPTS"]
 
 uv_resolution = { replace = "if", condition = "factor.mindeps", then = "lowest-direct", else = "highest"}
 
-# [tool.tox.env."3.13-mindeps-pyright"]
-# set_env = { TESTED_TOOLS = "pyright" }
-# deps = [".[pyright]"]
-# # commands = [["pytest", "tests/test_interface.py", "--checkers", "{posargs:}"]]
-# commands = [["pytest", "tests/test_interface.py", "--checkers", { replace = "posargs", extend = true }]]
-
 deps = [
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
