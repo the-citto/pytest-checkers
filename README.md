@@ -24,25 +24,25 @@
 
 Use desired LSPs, type checkers, linters, and formatters (diff only).
 
-Available optional dependencies:
-
-`pytest_checkers[black,isort,flake8,mypy,pyright,ruff,ty]`
-
-either of the above, or
-
-`pytest_checkers[all]`
+> major Version 2 changed to python 3.14
+> 
+> install pyright, mypy, ruff, flake8, black, isort, and use at will 
+> 
+> (easier to manage dependencies)
+> 
+> use major Version 1 for python 3.13, and if you can't do without [all] ;)
 
 Simple flags: `--ruff` `--mypy` etc. or just `--checkers` for all the dependencies installed. 
 
-Use `pyproject.toml` (and `.flake8` until they finally decide to move)
-for your preferred settings for every tool.
+Use `pyproject.toml` for your preferred settings for every tool.
 
 
 ## Note
 
-pyright installs `pyright[nodejs]`
+Better to
 
-isort install `isort[colors]`
+- pyright installs `pyright[nodejs]`
+- isort install `isort[colors]`
 
 ## Kudos
 
