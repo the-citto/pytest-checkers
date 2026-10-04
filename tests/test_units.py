@@ -15,8 +15,10 @@ import pytest
 if typing.TYPE_CHECKING:
     import types
 
-    from pytest_checkers import Tool
-    from pytest_checkers.checkers import CheckersPlugin
+    from pytest_checkers.checkers import (
+        CheckersPlugin,
+        Tool,
+    )
 
 
 class TestPluginItem:
@@ -44,7 +46,7 @@ class TestPluginItem:
             name="test_plugin",
             path=pathlib.Path("dummy_path"),
         )
-        item.config = mock_config  # ty: ignore[invalid-assignment]
+        item.config = mock_config
         return item, mock_plugin
 
     def test_runtest_success(self, item_setup: tuple[pytest.Item, MagicMock]) -> None:
@@ -64,7 +66,7 @@ class TestPluginItem:
     def test_repr_failure(self, item_setup: tuple[pytest.Item, MagicMock]) -> None:
         """Test `repr_failure`."""
         item_obj, _ = item_setup
-        res = item_obj.repr_failure(MagicMock())  # ty: ignore[invalid-argument-type]
+        res = item_obj.repr_failure(MagicMock())
         assert res == "test_plugin failed with output..."
 
     def test_reportinfo(self, item_setup: tuple[pytest.Item, MagicMock]) -> None:
@@ -99,7 +101,7 @@ class TestCheckersPlugin:
         """Test `__init__`."""
         assert hasattr(dummy_class, "config")
         assert isinstance(dummy_class.config, pytest.Config)
-        assert dummy_class.cmd_output == ""
+        assert not dummy_class.cmd_output
         assert dummy_class.cmd_returncode == 0
 
     def test_env_vars(self, dummy_class: CheckersPlugin) -> None:
@@ -133,7 +135,7 @@ class TestCheckersPlugin:
         dummy_class.cmd_output = "Success"
         dummy_class.finish_msg = " Done."
         mock_reporter = MagicMock()
-        dummy_class.pytest_terminal_summary(mock_reporter)  # ty: ignore[invalid-argument-type]
+        dummy_class.pytest_terminal_summary(mock_reporter)
         mock_reporter.write_sep.assert_called_once_with(
             title=f"tests {dummy_class.tool}",
             sep="=",
@@ -150,17 +152,19 @@ class TestCheckersPlugin:
             mock_created_item = MagicMock()
             mock_plugin_item_class.from_parent.return_value = mock_created_item
             dummy_class.pytest_collection_modifyitems(
-                session=mock_session,  # ty: ignore[invalid-argument-type]
-                config=mock_config,  # ty: ignore[invalid-argument-type]
+                session=mock_session,
+                config=mock_config,
                 items=items,
             )
             mock_plugin_item_class.from_parent.assert_called_once_with(
                 mock_session,
                 name=dummy_class.tool,
             )
-            assert mock_created_item._nodeid.endswith(  # pyright: ignore[reportPrivateUsage]  # noqa: SLF001
+            # ruff: disable[private-member-access]
+            assert mock_created_item._nodeid.endswith(  # pyright: ignore[reportPrivateUsage]
                 f"::{dummy_class.tool}",
             )
+            # ruff: enable[private-member-access]
             assert len(items) == 1
             assert items[0] == mock_created_item
 
@@ -173,7 +177,7 @@ class TestToolPlugin:
         """Return tool instance."""
         _, tool_class = tool_map
         mock_config = MagicMock(spec=pytest.Config)
-        return tool_class(config=mock_config)  # ty: ignore[invalid-argument-type]
+        return tool_class(config=mock_config)
 
     def test_tool_attrs(self, tool_instance: CheckersPlugin, tool_map: tuple[Tool, type[CheckersPlugin]]) -> None:
         """Test tool attributes."""
@@ -223,7 +227,7 @@ def test_pytest_configure_tool(checkers_module: CheckersPlugin, tool_map: tuple[
     mock_config.option.checkers = False
     setattr(mock_config.option, tool_name, True)
     with patch("pytest_checkers.checkers.added_options", [tool_name]):
-        checkers_module.pytest_configure(mock_config)  # type: ignore[attr-defined]
+        checkers_module.pytest_configure(mock_config)  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
         mock_config.pluginmanager.register.assert_called_once()
         args, _ = mock_config.pluginmanager.register.call_args
         assert isinstance(args[0], tool_class)

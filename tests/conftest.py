@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import operator
 import os
 import typing
 
 import pytest
 
-from pytest_checkers import (
+from pytest_checkers.checkers import (
     GROUP_NAME,
     HELPS,
     Group,
@@ -58,7 +59,7 @@ def _tool_help() -> list[tuple[Tool, str]]:
     return [(k, v) for k, v in HELPS.items() if k != GROUP_NAME]
 
 
-@pytest.fixture(params=_tool_help(), ids=lambda p: p[0])
+@pytest.fixture(params=_tool_help(), ids=operator.itemgetter(0))
 def tool_help(request: pytest.FixtureRequest) -> typing.Any:
     """Tool name and help."""
     return request.param
@@ -69,7 +70,6 @@ def tool_flags() -> dict[Tool, list[str]]:
     """Tool flags."""
     return {
         "pyright": [],
-        "ty": ["check"],
         "mypy": [],
         "ruff": ["check"],
         "flake8": ["--color=always"],
@@ -87,7 +87,7 @@ def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
         metafunc.parametrize(
             "tool_map",
             checkers.tools_map.items(),
-            ids=lambda p: p[0],
+            ids=operator.itemgetter(0),
         )
     if "custom_is_error" in metafunc.fixturenames:
         metafunc.parametrize(

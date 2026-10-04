@@ -4,16 +4,11 @@ from __future__ import annotations
 
 import importlib.util
 import os
-import subprocess
+import subprocess  # ruff: ignore[suspicious-subprocess-import]
 import sys
 import typing
 
 import pytest
-
-from pytest_checkers import (
-    GROUP_NAME,
-    HELPS,
-)
 
 if typing.TYPE_CHECKING:
 
@@ -23,17 +18,54 @@ if typing.TYPE_CHECKING:
     )
     from _pytest.terminal import TerminalReporter
 
-    from pytest_checkers import (
-        EscTable,
-        Tool,
-    )
+
+Group = typing.Literal["checkers"]
+Tool = typing.Literal["black", "flake8", "isort", "mypy", "pyright", "ruff"]
+EscTable = typing.Literal[
+    "black",
+    "red",
+    "green",
+    "yellow",
+    "blue",
+    "purple",
+    "cyan",
+    "white",
+    "Black",
+    "Red",
+    "Green",
+    "Yellow",
+    "Blue",
+    "Purple",
+    "Cyan",
+    "White",
+    "bold",
+    "light",
+    "blink",
+    "invert",
+]
+
+GROUP_NAME: Group = "checkers"
+HELPS: dict[Tool | Group, str] = {
+    "checkers": "Enable all available checks",
+    "black": "Enable `black --diff`",
+    "isort": "Enable `isort --diff`",
+    "flake8": "Enable `flake8`",
+    "ruff": "Enable `ruff check`",
+    "mypy": "Enable `mypy`",
+    "pyright": "Enable `pyright`",
+}
 
 
 class PluginItem(pytest.Item):
     """PluginItem."""
 
     def runtest(self) -> None:
-        """Run test."""
+        """Run test.
+
+        Raises:
+            pytest.fail: plugin error.
+
+        """
         plugin = self.config.pluginmanager.get_plugin(self.name)
         if not isinstance(plugin, CheckersPlugin):  # pragma: no cover
             pytest.exit(f"Internal Error: {self.name} plugin not found during runtest")
@@ -47,12 +79,22 @@ class PluginItem(pytest.Item):
         excinfo: pytest.ExceptionInfo[BaseException],
         style: TracebackStyle | None = None,
     ) -> str | TerminalRepr:
-        """Repr failure."""
+        """Repr failure.
+
+        Returns:
+            `repr` string.
+
+        """
         _ = excinfo, style
         return f"{self.name} failed with output..."
 
     def reportinfo(self) -> tuple[os.PathLike[str] | str, int | None, str]:
-        """Report info."""
+        """Report info.
+
+        Returns:
+            Report info tuple.
+
+        """
         return self.path, 0, f"tool::{self.name}"
 
 
@@ -91,7 +133,13 @@ class CheckersPlugin:
         """Run tool."""
         project_root = self.config.rootpath
         cmd = [sys.executable, "-m", self.tool, *self.cmd_flags, str(project_root)]
-        result = subprocess.run(cmd, capture_output=True, text=True, check=False, env=self.env_vars)  # noqa: S603
+        result = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+            cmd,
+            capture_output=True,
+            text=True,
+            check=False,
+            env=self.env_vars,
+        )
         self.cmd_output = result.stdout + result.stderr
         self.cmd_returncode = result.returncode
 
@@ -114,7 +162,9 @@ class CheckersPlugin:
             session,
             name=self.tool,
         )
-        item._nodeid = f"{GROUP_NAME}::{self.tool}"  # pyright: ignore[reportPrivateUsage]  # noqa: SLF001
+        item._nodeid = (  # ruff: ignore[private-member-access]  # pyright: ignore[reportPrivateUsage]
+            f"{GROUP_NAME}::{self.tool}"
+        )
         items.append(item)
 
 
@@ -125,16 +175,16 @@ class PyrightPlugin(CheckersPlugin):
     header_markup = "yellow"
 
 
-class TyPlugin(CheckersPlugin):
-    """Ty plugin."""
-
-    tool = "ty"
-    header_markup = "yellow"
-
-    @property
-    def cmd_flags(self) -> list[str]:
-        """Command flags."""
-        return ["check"]
+# class TyPlugin(CheckersPlugin):
+#     """Ty plugin."""
+#
+#     tool = "ty"
+#     header_markup = "yellow"
+#
+#     @property
+#     def cmd_flags(self) -> list[str]:
+#         """Command flags."""
+#         return ["check"]
 
 
 class MypyPlugin(CheckersPlugin):
@@ -213,7 +263,6 @@ tools_map: dict[Tool, type[CheckersPlugin]] = {
     "mypy": MypyPlugin,
     "pyright": PyrightPlugin,
     "ruff": RuffPlugin,
-    "ty": TyPlugin,
 }
 added_options: list[Tool] = []
 

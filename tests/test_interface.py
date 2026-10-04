@@ -6,10 +6,10 @@ import typing
 
 import pytest
 
-from pytest_checkers import GROUP_NAME
+from pytest_checkers.checkers import GROUP_NAME
 
 if typing.TYPE_CHECKING:
-    from pytest_checkers import (
+    from pytest_checkers.checkers import (
         Group,
         Tool,
     )
